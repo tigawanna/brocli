@@ -162,7 +162,7 @@ const getOptionTypeText = (option: BuilderConfig) => {
 		}
 	}
 
-	if (option.isRequired && option.type !== 'positional') result = '!' + result.length ? ' ' : '' + result;
+	if (option.isRequired && option.type !== 'positional') result = '!' + (result.length ? '' + result : ' ');
 	return result;
 };
 
