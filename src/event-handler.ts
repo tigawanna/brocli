@@ -2,7 +2,6 @@ import { type Command, getCommandNameWithParents } from './command-core';
 import type {
 	BuilderConfig,
 	GenericBuilderInternals,
-	GenericBuilderInternalsFields,
 	OptionType,
 	OutputType,
 	ProcessedBuilderConfig,
@@ -30,7 +29,7 @@ export type MissingArgsEvent = {
 	violation: 'missing_args_error';
 	name: string | undefined;
 	description: string | undefined;
-	command: Command;
+	command: Command | 'globals';
 	missing: [string[], ...string[][]];
 };
 
@@ -94,7 +93,7 @@ export type ValidationErrorEvent = {
 	violation: GenericValidationViolation;
 	name: string | undefined;
 	description: string | undefined;
-	command: Command;
+	command: Command | 'globals';
 	option: ProcessedBuilderConfig;
 	offender: {
 		namePart?: string;
@@ -171,8 +170,15 @@ const getOptionTypeText = (option: BuilderConfig) => {
  * Return `true` if your handler processes the event
  *
  * Return `false` to process event with a built-in handler
+ *
+ * @param options - Global options. `undefined` if globals failed to parse.
  */
-export type EventHandler = (event: BroCliEvent) => boolean | Promise<boolean>;
+export type EventHandler<TOpts = unknown> = (
+	event: BroCliEvent,
+	/** Global options. `undefined` if globals failed to parse. */
+	options?: TOpts | undefined,
+) => boolean | Promise<boolean>;
+
 export const defaultEventHandler: EventHandler = async (event) => {
 	switch (event.type) {
 		case 'command_help': {
@@ -552,16 +558,18 @@ export const defaultEventHandler: EventHandler = async (event) => {
 				case 'missing_args_error': {
 					const { missing: missingOpts, command } = event;
 
-					msg = `Command '${command.name}' is missing following required options: ${
-						missingOpts.map((opt) => {
-							const name = opt.shift()!;
-							const aliases = opt;
+					msg = command === 'globals'
+						? `Missing`
+						: `Command '${command.name}' is missing` + ` following required options: ${
+							missingOpts.map((opt) => {
+								const name = opt.shift()!;
+								const aliases = opt;
 
-							if (aliases.length) return `${name} [${aliases.join(', ')}]`;
+								if (aliases.length) return `${name} [${aliases.join(', ')}]`;
 
-							return name;
-						}).join(', ')
-					}`;
+								return name;
+							}).join(', ')
+						}`;
 
 					break;
 				}
@@ -591,5 +599,6 @@ export const defaultEventHandler: EventHandler = async (event) => {
 	return false;
 };
 
-export const eventHandlerWrapper = (customEventHandler: EventHandler) => async (event: BroCliEvent) =>
-	await customEventHandler(event) ? true : await defaultEventHandler(event);
+export const eventHandlerWrapper =
+	<TOpts>(customEventHandler: EventHandler<TOpts>) => async (event: BroCliEvent, options: TOpts) =>
+		await customEventHandler(event, options) ? true : await defaultEventHandler(event, options);

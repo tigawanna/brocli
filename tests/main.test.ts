@@ -137,7 +137,7 @@ describe('Parsing tests', (it) => {
 		await run(commands, {
 			argSource: getArgs('generate --dialect=pg'),
 			theme: testTheme,
-			// @ts-expect-error
+
 			noExit: true,
 		});
 
@@ -168,7 +168,7 @@ describe('Parsing tests', (it) => {
 					'generate --dialect pg --schema=./schemapath.ts --out=./outfile.ts --name="Example migration" --breakpoints=breakpoints --custom="custom value" --flag --defFlag false --dbg=true --num 5.5 --int=2 posval second',
 				),
 				theme: testTheme,
-				// @ts-expect-error
+
 				noExit: true,
 			},
 		);
@@ -200,7 +200,7 @@ describe('Parsing tests', (it) => {
 					'generate -dlc pg -s=./schemapath.ts -o=./outfile.ts -n="Example migration" --break=breakpoints --cus="custom value" -f -def false -ds=Not=Default=Value -g=true -nb=5.5 -i=2 posval second',
 				),
 				theme: testTheme,
-				// @ts-expect-error
+
 				noExit: true,
 			},
 		);
@@ -228,7 +228,7 @@ describe('Parsing tests', (it) => {
 		await run(commands, {
 			argSource: getArgs('generate'),
 			theme: testTheme,
-			// @ts-expect-error
+
 			noExit: true,
 		});
 
@@ -246,7 +246,7 @@ describe('Parsing tests', (it) => {
 		await run(commands, {
 			argSource: getArgs('generate --dialect=pg --unknown-one -m'),
 			theme: testTheme,
-			// @ts-expect-error
+
 			noExit: true,
 		});
 
@@ -264,7 +264,7 @@ describe('Parsing tests', (it) => {
 		await run(commands, {
 			argSource: getArgs('generate --dialect=pg -def=somevalue'),
 			theme: testTheme,
-			// @ts-expect-error
+
 			noExit: true,
 		});
 
@@ -286,7 +286,7 @@ describe('Parsing tests', (it) => {
 		await run(commands, {
 			argSource: getArgs('generate --dialect=pg -ds'),
 			theme: testTheme,
-			// @ts-expect-error
+
 			noExit: true,
 		});
 
@@ -308,7 +308,7 @@ describe('Parsing tests', (it) => {
 		await run(commands, {
 			argSource: getArgs('generate --dialect=pg -nb string'),
 			theme: testTheme,
-			// @ts-expect-error
+
 			noExit: true,
 		});
 
@@ -330,7 +330,7 @@ describe('Parsing tests', (it) => {
 		await run(commands, {
 			argSource: getArgs('generate --dialect=wrong'),
 			theme: testTheme,
-			// @ts-expect-error
+
 			noExit: true,
 		});
 
@@ -352,7 +352,7 @@ describe('Parsing tests', (it) => {
 		await run(commands, {
 			argSource: getArgs('generate --dialect=pg someval wrongval'),
 			theme: testTheme,
-			// @ts-expect-error
+
 			noExit: true,
 		});
 
@@ -373,7 +373,7 @@ describe('Parsing tests', (it) => {
 		await run(commands, {
 			argSource: getArgs('generate --dialect=pg -nb -20'),
 			theme: testTheme,
-			// @ts-expect-error
+
 			noExit: true,
 		});
 
@@ -395,7 +395,7 @@ describe('Parsing tests', (it) => {
 		await run(commands, {
 			argSource: getArgs('generate --dialect=pg -nb 20'),
 			theme: testTheme,
-			// @ts-expect-error
+
 			noExit: true,
 		});
 
@@ -417,7 +417,7 @@ describe('Parsing tests', (it) => {
 		await run(commands, {
 			argSource: getArgs('generate --dialect=pg -i 20.5'),
 			theme: testTheme,
-			// @ts-expect-error
+
 			noExit: true,
 		});
 
@@ -439,7 +439,7 @@ describe('Parsing tests', (it) => {
 		await run(commands, {
 			argSource: getArgs('generate posval --dialect=pg'),
 			theme: testTheme,
-			// @ts-expect-error
+
 			noExit: true,
 		});
 
@@ -466,7 +466,7 @@ describe('Parsing tests', (it) => {
 		await run(commands, {
 			argSource: getArgs('generate -f true posval --dialect=pg'),
 			theme: testTheme,
-			// @ts-expect-error
+
 			noExit: true,
 		});
 
@@ -493,7 +493,7 @@ describe('Parsing tests', (it) => {
 		await run(commands, {
 			argSource: getArgs('generate -f=true posval --dialect=pg'),
 			theme: testTheme,
-			// @ts-expect-error
+
 			noExit: true,
 		});
 
@@ -520,7 +520,7 @@ describe('Parsing tests', (it) => {
 		await run(commands, {
 			argSource: getArgs('generate -f posval --dialect=pg'),
 			theme: testTheme,
-			// @ts-expect-error
+
 			noExit: true,
 		});
 
@@ -547,7 +547,7 @@ describe('Parsing tests', (it) => {
 		await run(commands, {
 			argSource: getArgs('generate --dialect pg posval'),
 			theme: testTheme,
-			// @ts-expect-error
+
 			noExit: true,
 		});
 
@@ -574,7 +574,7 @@ describe('Parsing tests', (it) => {
 		await run(commands, {
 			argSource: getArgs('generate --dialect=pg posval'),
 			theme: testTheme,
-			// @ts-expect-error
+
 			noExit: true,
 		});
 
@@ -601,7 +601,7 @@ describe('Parsing tests', (it) => {
 		await run(commands, {
 			argSource: getArgs('c-first'),
 			theme: testTheme,
-			// @ts-expect-error
+
 			noExit: true,
 		});
 
@@ -630,7 +630,7 @@ describe('Parsing tests', (it) => {
 		await run(commands, {
 			argSource: getArgs('--flag --string=strval c-second --stealth --sstring="Hidden string"'),
 			theme: testTheme,
-			// @ts-expect-error
+
 			noExit: true,
 		});
 
@@ -646,7 +646,7 @@ describe('Parsing tests', (it) => {
 		await run(commands, {
 			argSource: getArgs('--flag --string=strval --stealth --sstring="Hidden string" c-second'),
 			theme: testTheme,
-			// @ts-expect-error
+
 			noExit: true,
 		});
 
@@ -662,7 +662,7 @@ describe('Parsing tests', (it) => {
 		await run(commands, {
 			argSource: getArgs('unknown --somearg=somevalue -f'),
 			theme: testTheme,
-			// @ts-expect-error
+
 			noExit: true,
 		});
 
@@ -680,7 +680,7 @@ describe('Parsing tests', (it) => {
 		await run(commands, {
 			argSource: getArgs('c-first'),
 			theme: testTheme,
-			// @ts-expect-error
+
 			noExit: true,
 		});
 
@@ -696,7 +696,7 @@ describe('Parsing tests', (it) => {
 		await run(commands, {
 			argSource: getArgs('c-first sub -f posval -s=str '),
 			theme: testTheme,
-			// @ts-expect-error
+
 			noExit: true,
 		});
 
@@ -711,7 +711,7 @@ describe('Parsing tests', (it) => {
 		await run(commands, {
 			argSource: getArgs('c-first -f true sub posval2 -s=str '),
 			theme: testTheme,
-			// @ts-expect-error
+
 			noExit: true,
 		});
 
@@ -726,7 +726,7 @@ describe('Parsing tests', (it) => {
 		await run(commands, {
 			argSource: getArgs('c-first -f posval3 -s=str sub'),
 			theme: testTheme,
-			// @ts-expect-error
+
 			noExit: true,
 		});
 
@@ -741,7 +741,7 @@ describe('Parsing tests', (it) => {
 		await run(commands, {
 			argSource: getArgs('c-first nohandler deep'),
 			theme: testTheme,
-			// @ts-expect-error
+
 			noExit: true,
 		});
 
@@ -752,7 +752,7 @@ describe('Parsing tests', (it) => {
 		await run(commands, {
 			argSource: getArgs('c-first -f posval3 -s=str sub'),
 			theme: testTheme,
-			// @ts-expect-error
+
 			noExit: true,
 		});
 
@@ -767,7 +767,7 @@ describe('Parsing tests', (it) => {
 		await run(commands, {
 			argSource: getArgs('c-first unrecognized'),
 			theme: testTheme,
-			// @ts-expect-error
+
 			noExit: true,
 		});
 
@@ -799,7 +799,7 @@ describe('Parsing tests', (it) => {
 		await run([cmd], {
 			argSource: getArgs('generate --dialect=pg'),
 			theme: testTheme,
-			// @ts-expect-error
+
 			noExit: true,
 		});
 
@@ -843,7 +843,7 @@ describe('Parsing tests', (it) => {
 		await run(commands, {
 			argSource: getArgs('--help'),
 			theme: testTheme,
-			// @ts-expect-error
+
 			noExit: true,
 		});
 
@@ -861,7 +861,7 @@ describe('Parsing tests', (it) => {
 		await run(commands, {
 			argSource: getArgs('--someothergarbage=there -h --somegarbage here'),
 			theme: testTheme,
-			// @ts-expect-error
+
 			noExit: true,
 		});
 
@@ -879,7 +879,7 @@ describe('Parsing tests', (it) => {
 		await run(commands, {
 			argSource: getArgs('generate --help'),
 			theme: testTheme,
-			// @ts-expect-error
+
 			noExit: true,
 		});
 
@@ -897,7 +897,7 @@ describe('Parsing tests', (it) => {
 		await run(commands, {
 			argSource: getArgs('c-first sub --help'),
 			theme: testTheme,
-			// @ts-expect-error
+
 			noExit: true,
 		});
 
@@ -915,7 +915,7 @@ describe('Parsing tests', (it) => {
 		await run(commands, {
 			argSource: getArgs('generate sometrash --flag --help sometrash '),
 			theme: testTheme,
-			// @ts-expect-error
+
 			noExit: true,
 		});
 
@@ -933,7 +933,7 @@ describe('Parsing tests', (it) => {
 		await run(commands, {
 			argSource: getArgs('generate -h'),
 			theme: testTheme,
-			// @ts-expect-error
+
 			noExit: true,
 		});
 
@@ -951,7 +951,7 @@ describe('Parsing tests', (it) => {
 		await run(commands, {
 			argSource: getArgs('generate sometrash --flag -h sometrash '),
 			theme: testTheme,
-			// @ts-expect-error
+
 			noExit: true,
 		});
 
@@ -969,7 +969,7 @@ describe('Parsing tests', (it) => {
 		await run(commands, {
 			argSource: getArgs('help'),
 			theme: testTheme,
-			// @ts-expect-error
+
 			noExit: true,
 		});
 
@@ -987,7 +987,7 @@ describe('Parsing tests', (it) => {
 		await run(commands, {
 			argSource: getArgs('help generate'),
 			theme: testTheme,
-			// @ts-expect-error
+
 			noExit: true,
 		});
 
@@ -1005,7 +1005,7 @@ describe('Parsing tests', (it) => {
 		await run(commands, {
 			argSource: getArgs('help c-first sub'),
 			theme: testTheme,
-			// @ts-expect-error
+
 			noExit: true,
 		});
 
@@ -1023,7 +1023,7 @@ describe('Parsing tests', (it) => {
 		await run(commands, {
 			argSource: getArgs('help c-first nohandler'),
 			theme: testTheme,
-			// @ts-expect-error
+
 			noExit: true,
 		});
 
@@ -1274,7 +1274,7 @@ describe('Command definition tests', (it) => {
 		expect(
 			await run([...commands, cmd], {
 				theme: testTheme,
-				// @ts-expect-error
+
 				noExit: true,
 			}),
 		).toStrictEqual("BroCli error: Can't define command 'c-first': name is already in use by command 'c-first'!");
@@ -1290,7 +1290,7 @@ describe('Command definition tests', (it) => {
 		expect(
 			await run([...commands, cmd], {
 				theme: testTheme,
-				// @ts-expect-error
+
 				noExit: true,
 			}),
 		).toStrictEqual("BroCli error: Can't define command 'c-third': alias 'g' is already in use by command 'generate'!");
@@ -1306,7 +1306,7 @@ describe('Command definition tests', (it) => {
 		expect(
 			await run([...commands, cmd], {
 				theme: testTheme,
-				// @ts-expect-error
+
 				noExit: true,
 			}),
 		).toStrictEqual("BroCli error: Can't define command 'gen': name is already in use by command 'generate'!");
@@ -1322,7 +1322,7 @@ describe('Command definition tests', (it) => {
 		expect(
 			await run([...commands, cmd], {
 				theme: testTheme,
-				// @ts-expect-error
+
 				noExit: true,
 			}),
 		).toStrictEqual(
@@ -1468,7 +1468,7 @@ describe('Command definition tests', (it) => {
 		await run([cmd], {
 			argSource: getArgs('c-tenth -f -j false --string=strval'),
 			theme: testTheme,
-			// @ts-expect-error
+
 			noExit: true,
 		});
 
@@ -1732,7 +1732,7 @@ describe('Globals tests', (it) => {
 				globals: {
 					flag: boolean(),
 				},
-				// @ts-expect-error
+
 				noExit: true,
 			}),
 		).toStrictEqual(
@@ -1746,7 +1746,7 @@ describe('Globals tests', (it) => {
 				globals: {
 					gFlag: boolean().alias('--flag'),
 				},
-				// @ts-expect-error
+
 				noExit: true,
 			}),
 		).toStrictEqual(
@@ -1760,7 +1760,7 @@ describe('Globals tests', (it) => {
 				globals: {
 					gFlag: boolean().alias('-al'),
 				},
-				// @ts-expect-error
+
 				noExit: true,
 			}),
 		).toStrictEqual(
@@ -1774,7 +1774,7 @@ describe('Globals tests', (it) => {
 				globals: {
 					txt: string(),
 				},
-				// @ts-expect-error
+
 				noExit: true,
 			}),
 		).toStrictEqual(
@@ -1791,7 +1791,107 @@ describe('Globals tests', (it) => {
 			hook(event, command, globals) {
 				gs = globals;
 			},
-			// @ts-expect-error
+
+			noExit: true,
+		});
+
+		expect(gs).toStrictEqual({
+			globalFlag: undefined,
+			globalText: undefined,
+			globalEnum: 'one',
+			globalTextDef: 'strdef',
+			globalFlagDef: false,
+			globalEnumDef: 'three',
+		});
+	});
+
+	it('Avaliable on help callbacks', async () => {
+		let gs: any;
+
+		await run(commands, {
+			argSource: getArgs('--help=true -genum "one"'),
+			globals,
+			help(options) {
+				gs = options;
+
+				expectTypeOf(options).toEqualTypeOf<{
+					globalText: string | undefined;
+					globalFlag: boolean | undefined;
+					globalEnum: 'one' | 'two' | 'three' | undefined;
+					globalTextDef: string;
+					globalFlagDef: boolean;
+					globalEnumDef: 'one' | 'two' | 'three';
+				}>();
+			},
+
+			noExit: true,
+		});
+
+		expect(gs).toStrictEqual({
+			globalFlag: undefined,
+			globalText: undefined,
+			globalEnum: 'one',
+			globalTextDef: 'strdef',
+			globalFlagDef: false,
+			globalEnumDef: 'three',
+		});
+	});
+
+	it('Avaliable on version callbacks', async () => {
+		let gs: any;
+
+		await run(commands, {
+			argSource: getArgs('--version -genum "one"'),
+			globals,
+			version(options) {
+				gs = options;
+
+				expectTypeOf(options).toEqualTypeOf<{
+					globalText: string | undefined;
+					globalFlag: boolean | undefined;
+					globalEnum: 'one' | 'two' | 'three' | undefined;
+					globalTextDef: string;
+					globalFlagDef: boolean;
+					globalEnumDef: 'one' | 'two' | 'three';
+				}>();
+			},
+
+			noExit: true,
+		});
+
+		expect(gs).toStrictEqual({
+			globalFlag: undefined,
+			globalText: undefined,
+			globalEnum: 'one',
+			globalTextDef: 'strdef',
+			globalFlagDef: false,
+			globalEnumDef: 'three',
+		});
+	});
+
+	it('Avaliable on theme callbacks', async () => {
+		let gs: any;
+
+		await run(commands, {
+			argSource: getArgs('-genum "one" --version'),
+			globals,
+			theme(event, options) {
+				gs = options;
+
+				expectTypeOf(options).toEqualTypeOf<
+					| {
+						globalText: string | undefined;
+						globalFlag: boolean | undefined;
+						globalEnum: 'one' | 'two' | 'three' | undefined;
+						globalTextDef: string;
+						globalFlagDef: boolean;
+						globalEnumDef: 'one' | 'two' | 'three';
+					}
+					| undefined
+				>();
+				return true;
+			},
+
 			noExit: true,
 		});
 
@@ -1814,7 +1914,7 @@ describe('Globals tests', (it) => {
 			hook(event, command, globals) {
 				gs = globals;
 			},
-			// @ts-expect-error
+
 			noExit: true,
 		});
 
@@ -1911,7 +2011,7 @@ describe('Type tests', (it) => {
 		});
 	});
 
-	it('Globals type inferrence', () => {
+	it('Globals type inferrence', async () => {
 		const commands = [command({
 			name: 'test',
 			handler: (opts) => '',
@@ -1925,7 +2025,7 @@ describe('Type tests', (it) => {
 			gEnum: 'variant_one' | 'variant_two' | undefined;
 		};
 
-		run(commands, {
+		await run(commands, {
 			globals: {
 				gBool: boolean().alias('-gb').default(false),
 				gText: string().alias('-gt').default('text'),
@@ -1937,6 +2037,6 @@ describe('Type tests', (it) => {
 				expectTypeOf(globals).toEqualTypeOf<ExpectedType>();
 			},
 			theme: testTheme,
-		});
+		}).catch((e) => null);
 	});
 });

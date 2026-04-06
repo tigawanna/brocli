@@ -43,8 +43,8 @@ export type BroCliConfig<
 	name?: string;
 	description?: string;
 	argSource?: string[];
-	help?: string | Function;
-	version?: string | Function;
+	help?: string | ((options: TOptsData) => void);
+	version?: string | ((options: TOptsData) => void);
 	omitKeysOfUndefinedOptions?: boolean;
 	globals?: TOpts;
 	hook?: (
@@ -52,7 +52,9 @@ export type BroCliConfig<
 		command: Command,
 		options: TOptsData,
 	) => any;
-	theme?: EventHandler;
+	theme?: EventHandler<TOptsData>;
+	/** @internal - option for tests */
+	noExit?: boolean;
 };
 
 export type GenericCommandHandler = (options?: Record<string, OutputType> | undefined) => any;
@@ -416,7 +418,7 @@ const getCommand = (
 };
 
 const parseArg = (
-	command: Command,
+	command: Command | 'globals',
 	options: [string, ProcessedBuilderConfig][],
 	positionals: [string, ProcessedBuilderConfig][],
 	arg: string,
@@ -431,17 +433,20 @@ const parseArg = (
 
 	const namePart = argSplit.shift()!;
 	const dataPart = hasEq ? argSplit.join('=') : nextArg;
+	let lcaseData = dataPart?.toLowerCase();
 	let skipNext = !hasEq;
 
 	if (namePart === '--help' || namePart === '-h') {
 		return {
 			isHelp: true,
+			skipNext: (!hasEq && nextArg?.startsWith('-')) ? false : skipNext,
 		};
 	}
 
 	if (namePart === '--version' || namePart === '-v') {
 		return {
 			isVersion: true,
+			skipNext: (!hasEq && nextArg?.startsWith('-')) ? false : skipNext,
 		};
 	}
 
@@ -480,8 +485,6 @@ const parseArg = (
 		if (opt.type === 'boolean') {
 			const match = names.find((name) => name === namePart);
 			if (!match) return false;
-
-			let lcaseData = dataPart?.toLowerCase();
 
 			if (!hasEq && nextArg?.startsWith('-')) {
 				data = true;
@@ -729,12 +732,13 @@ const parseOptions = (
 };
 
 const parseGlobals = (
-	command: Command,
+	command: Command | 'globals',
 	globals: ProcessedOptions<Record<string, GenericBuilderInternals>> | undefined,
 	args: string[],
 	cliName: string | undefined,
 	cliDescription: string | undefined,
-	omitKeysOfUndefinedOptions?: boolean,
+	omitKeysOfUndefinedOptions: boolean,
+	ignoreSpecialCases?: boolean,
 ): Record<string, OutputType> | 'help' | 'version' | undefined => {
 	if (!globals) return undefined;
 
@@ -759,8 +763,10 @@ const parseGlobals = (
 		} = parseArg(command, optEntries, [], arg, nextArg, cliName, cliDescription);
 		if (skipNext) ++i;
 
-		if (isHelp) return 'help';
-		if (isVersion) return 'version';
+		if (!ignoreSpecialCases) {
+			if (isHelp) return 'help';
+			if (isVersion) return 'version';
+		}
 		if (!option) continue;
 		delete args[i];
 		if (skipNext) delete args[i - 1];
@@ -911,7 +917,7 @@ export const run = async <
 >(
 	commands: Command[],
 	config?: BroCliConfig<TOpts>,
-): Promise<void> => {
+): Promise<unknown> => {
 	const eventHandler = config?.theme
 		? eventHandlerWrapper(config.theme)
 		: defaultEventHandler;
@@ -923,20 +929,49 @@ export const run = async <
 	const cliDescription = config?.description;
 	const globals = config?.globals;
 
+	let prepassError: any;
+	let processedGlobals: ProcessedOptions<NonNullable<TOpts>> | undefined;
+	let processedCmds: Command<any, any>[];
+	const args = argSource.slice(2, argSource.length);
 	try {
-		const processedCmds = validateCommands(commands);
-		const processedGlobals = globals ? validateOptions(globals) : undefined;
+		processedCmds = validateCommands(commands);
+		processedGlobals = globals ? validateOptions(globals) : undefined;
 		if (processedGlobals) validateGlobals(processedCmds, processedGlobals);
+	} catch (e) {
+		prepassError = e;
+		processedCmds = [];
+	}
+	let preparseError: any;
+	let _preparsedGlobals: TOpts extends Record<string, GenericBuilderInternals> ? TypeOf<TOpts> : undefined;
+	const preparsedGlobals = () => {
+		if (preparseError) throw preparseError;
+		return _preparsedGlobals;
+	};
+	try {
+		_preparsedGlobals = parseGlobals(
+			'globals',
+			processedGlobals,
+			[...args],
+			cliName,
+			cliDescription,
+			omitKeysOfUndefinedOptions,
+			true,
+		) as any;
+	} catch (e) {
+		preparseError = e;
+	}
 
-		let args = argSource.slice(2, argSource.length);
+	try {
+		if (prepassError) throw prepassError;
+
 		if (!args.length) {
-			return help !== undefined ? await executeOrLog(help) : await eventHandler({
+			return help !== undefined ? await executeOrLog(help, preparsedGlobals()) : await eventHandler({
 				type: 'global_help',
 				description: cliDescription,
 				name: cliName,
 				commands: processedCmds,
 				globals: processedGlobals,
-			});
+			}, preparsedGlobals());
 		}
 
 		const helpIndex = args.findIndex((arg) => arg === '--help' || arg === '-h');
@@ -954,37 +989,37 @@ export const run = async <
 					name: cliName,
 					command: command,
 					globals: processedGlobals,
-				});
+				}, preparsedGlobals());
 			} else {
-				return help !== undefined ? await executeOrLog(help) : await eventHandler({
+				return help !== undefined ? await executeOrLog(help, preparsedGlobals()) : await eventHandler({
 					type: 'global_help',
 					description: cliDescription,
 					name: cliName,
 					commands: processedCmds,
 					globals: processedGlobals,
-				});
+				}, preparsedGlobals());
 			}
 		}
 
 		const versionIndex = args.findIndex((arg) => arg === '--version' || arg === '-v');
 		if (versionIndex !== -1 && (versionIndex > 0 ? args[versionIndex - 1]?.startsWith('-') ? false : true : true)) {
-			return version !== undefined ? await executeOrLog(version) : await eventHandler({
+			return version !== undefined ? await executeOrLog(version, preparsedGlobals()) : await eventHandler({
 				type: 'version',
 				name: cliName,
 				description: cliDescription,
-			});
+			}, preparsedGlobals());
 		}
 
 		const { command, args: newArgs } = getCommand(processedCmds, args, cliName, cliDescription);
 
 		if (!command) {
-			return help !== undefined ? await executeOrLog(help) : await eventHandler({
+			return help !== undefined ? await executeOrLog(help, preparsedGlobals()) : await eventHandler({
 				type: 'global_help',
 				description: cliDescription,
 				name: cliName,
 				commands: processedCmds,
 				globals: processedGlobals,
-			});
+			}, preparsedGlobals());
 		}
 
 		if (command === 'help') {
@@ -1004,16 +1039,16 @@ export const run = async <
 					name: cliName,
 					command: helpCommand,
 					globals: processedGlobals,
-				})
+				}, preparsedGlobals())
 				: help !== undefined
-				? await executeOrLog(help)
+				? await executeOrLog(help, preparsedGlobals())
 				: await eventHandler({
 					type: 'global_help',
 					description: cliDescription,
 					name: cliName,
 					commands: processedCmds,
 					globals: processedGlobals,
-				});
+				}, preparsedGlobals());
 		}
 
 		const gOptionResult = parseGlobals(
@@ -1041,14 +1076,14 @@ export const run = async <
 				name: cliName,
 				command: command,
 				globals: processedGlobals,
-			});
+			}, preparsedGlobals());
 		}
 		if (optionResult === 'version' || gOptionResult === 'version') {
-			return version !== undefined ? await executeOrLog(version) : await eventHandler({
+			return version !== undefined ? await executeOrLog(version, preparsedGlobals()) : await eventHandler({
 				type: 'version',
 				name: cliName,
 				description: cliDescription,
-			});
+			}, preparsedGlobals());
 		}
 
 		if (command.handler) {
@@ -1063,15 +1098,13 @@ export const run = async <
 				name: cliName,
 				command: command,
 				globals: processedGlobals,
-			});
+			}, preparsedGlobals());
 		}
 	} catch (e) {
 		if (e instanceof BroCliError) {
-			if (e.event) await eventHandler(e.event);
+			if (e.event) await eventHandler(e.event, preparsedGlobals());
 			else {
-				// @ts-expect-error - option meant only for tests
 				if (!config?.noExit) console.error(e.message);
-				// @ts-expect-error - return path meant only for tests
 				else return e.message;
 			}
 		} else {
@@ -1081,10 +1114,8 @@ export const run = async <
 				name: cliName,
 				description: cliDescription,
 				error: e,
-			});
+			}, preparsedGlobals());
 		}
-
-		// @ts-expect-error - option meant only for tests
 		if (!config?.noExit) process.exit(1);
 
 		return;
