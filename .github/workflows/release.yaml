@@ -107,6 +107,7 @@ jobs:
     release-gh:
         permissions: 
             contents: read
+            id-token: write
             packages: write
         env:
             NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
