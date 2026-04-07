@@ -4,19 +4,18 @@ on: workflow_dispatch
 
 jobs:
     release:
-        permissions: write-all
+        permissions:
+            contents: read
+            packages: write
         strategy:
             fail-fast: false
-            matrix:
-                package:
-                    - brocli
         runs-on: ubuntu-24.04
         steps:
             - uses: actions/checkout@v4
 
             - uses: actions/setup-node@v4
               with:
-                  node-version: 18
+                  node-version: 24
                   registry-url: 'https://npm.pkg.github.com'
 
             - uses: pnpm/action-setup@v3
@@ -61,6 +60,12 @@ jobs:
               run: |
                   pnpm attw package.tgz
 
+            - name: Remove temp npmrc
+              run: rm -f "$NPM_CONFIG_USERCONFIG"
+
+            - name: Update NPM
+              run: npm install -g npm@latest
+
             - name: Publish
               shell: bash
               env:
@@ -68,7 +73,7 @@ jobs:
               run: |
                   version="$(jq -r .version package.json)"
 
-                  echo "Publishing ${{ matrix.package }}@$version"
-                  npm run publish --access public
+                  echo "Publishing brocli@$version"
+                  npm publish package.tgz --access public
 
-                  echo "npm: \`+ ${{ matrix.package }}@$version\`" >> $GITHUB_STEP_SUMMARY
+                  echo "npm: \`+ brocli@$version\`" >> $GITHUB_STEP_SUMMARY
