@@ -67,12 +67,64 @@ jobs:
             - name: Update NPM
               run: npm install -g npm@latest
 
-            - name: Publish
+            - name: Extract package info
+              id: pkg
+              run: |
+                NAME=$(node -p "require('./package.json').name")
+                VERSION=$(node -p "require('./package.json').version")
+                echo "name=$NAME" >> $GITHUB_OUTPUT
+                echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+            - name: Check for NPM version existence
+              id: npm_check
+              run: |
+                if npm view "${{ steps.pkg.outputs.name }}@${{ steps.pkg.outputs.version }}" version > /dev/null 2>&1; then
+                  echo "exists=true" >> $GITHUB_OUTPUT
+                else
+                  echo "exists=false" >> $GITHUB_OUTPUT
+                fi
+
+            - name: Check for GitHub version existence
+              id: gpr_check
+              env:
+                NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              run: |
+                echo "@${{ github.repository_owner }}:registry=https://npm.pkg.github.com" > ~/.npmrc
+                echo "//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}" >> ~/.npmrc
+
+                if npm view "${{ steps.pkg.outputs.name }}@${{ steps.pkg.outputs.version }}" version --registry=https://npm.pkg.github.com > /dev/null 2>&1; then
+                  echo "exists=true" >> $GITHUB_OUTPUT
+                else
+                  echo "exists=false" >> $GITHUB_OUTPUT
+                fi
+
+            - name: Publish to NPM
+              if: steps.npm_check.outputs.exists == 'false'
               shell: bash
               run: |
-                  version="$(jq -r .version package.json)"
-
-                  echo "Publishing brocli@$version"
+                  echo "Publishing ${{ steps.pkg.outputs.name }}@${{ steps.pkg.outputs.version }}"
                   npm publish package.tgz --provenance
 
-                  echo "npm: \`+ brocli@$version\`" >> $GITHUB_STEP_SUMMARY
+                  echo "npm: \`+ ${{ steps.pkg.outputs.name }}@${{ steps.pkg.outputs.version }}\`" >> $GITHUB_STEP_SUMMARY
+
+            - name: Skip publish to NPM
+              if: steps.npm_check.outputs.exists == 'true'
+              run: echo "npm version already exists, skipping"
+
+            - name: Setup npm for GitHub Packages
+              if: steps.gpr_check.outputs.exists == 'false'
+              run: |
+                echo "@${{ github.repository_owner }}:registry=https://npm.pkg.github.com" > ~/.npmrc
+                echo "//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}" >> ~/.npmrc
+              env:
+                NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Publish to GitHub Packages
+              if: steps.gpr_check.outputs.exists == 'false'
+              run: npm publish package.tgz --access public
+              env:
+                NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Skip publishing to GitHub
+              if: steps.gpr_check.outputs.exists == 'true'
+              run: echo "GitHub Packages version already exists, skipping"
