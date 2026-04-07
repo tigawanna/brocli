@@ -84,20 +84,6 @@ jobs:
                   echo "exists=false" >> $GITHUB_OUTPUT
                 fi
 
-            - name: Check for GitHub version existence
-              id: gpr_check
-              env:
-                NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-              run: |
-                echo "@${{ github.repository_owner }}:registry=https://npm.pkg.github.com" > ~/.npmrc
-                echo "//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}" >> ~/.npmrc
-
-                if npm view "${{ steps.pkg.outputs.name }}@${{ steps.pkg.outputs.version }}" version --registry=https://npm.pkg.github.com > /dev/null 2>&1; then
-                  echo "exists=true" >> $GITHUB_OUTPUT
-                else
-                  echo "exists=false" >> $GITHUB_OUTPUT
-                fi
-
             - name: Publish to NPM
               if: steps.npm_check.outputs.exists == 'false'
               shell: bash
@@ -111,13 +97,22 @@ jobs:
               if: steps.npm_check.outputs.exists == 'true'
               run: echo "npm version already exists, skipping"
 
-            - name: Setup npm for GitHub Packages
-              if: steps.gpr_check.outputs.exists == 'false'
+            - name: Check for GitHub version existence
+              id: gpr_check
+              env:
+                NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               run: |
                 echo "@${{ github.repository_owner }}:registry=https://npm.pkg.github.com" > ~/.npmrc
                 echo "//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}" >> ~/.npmrc
-              env:
-                NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+                RESULT=$(npm view "${{ steps.pkg.outputs.name }}@${{ steps.pkg.outputs.version }}" version \
+                  --registry=https://npm.pkg.github.com 2>&1)
+
+                if echo "$RESULT" | grep -q "E404"; then
+                  echo "exists=false" >> $GITHUB_OUTPUT
+                else
+                  echo "exists=true" >> $GITHUB_OUTPUT
+                fi
 
             - name: Publish to GitHub Packages
               if: steps.gpr_check.outputs.exists == 'false'
