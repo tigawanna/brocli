@@ -7,11 +7,11 @@ jobs:
         permissions: 
             contents: read
             id-token: write
+        env:
+            NODE_AUTH_TOKEN: ""   
+            NPM_TOKEN: ""
         strategy:
             fail-fast: false
-            matrix:
-                package:
-                    - brocli
         runs-on: ubuntu-24.04
         steps:
             - uses: actions/checkout@v4
@@ -54,8 +54,6 @@ jobs:
 
             - name: Pack
               shell: bash
-              env:
-                  NODE_AUTH_TOKEN: ${{ secrets.NPM_ACCESS_TOKEN }}
               run: |
                   npm run pack
 
@@ -63,14 +61,18 @@ jobs:
               run: |
                   pnpm attw package.tgz
 
+            - name: Remove temp npmrc
+              run: rm -f "$NPM_CONFIG_USERCONFIG"
+
+            - name: Update NPM
+              run: npm install -g npm@latest
+
             - name: Publish
               shell: bash
-              env:
-                  NODE_AUTH_TOKEN: ${{ secrets.NPM_ACCESS_TOKEN }}
               run: |
                   version="$(jq -r .version package.json)"
 
-                  echo "Publishing ${{ matrix.package }}@$version"
+                  echo "Publishing brocli@$version"
                   npm run publish
 
-                  echo "npm: \`+ ${{ matrix.package }}@$version\`" >> $GITHUB_STEP_SUMMARY
+                  echo "npm: \`+ brocli@$version\`" >> $GITHUB_STEP_SUMMARY
