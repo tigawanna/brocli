@@ -73,6 +73,6 @@ jobs:
                   version="$(jq -r .version package.json)"
 
                   echo "Publishing brocli@$version"
-                  npm run publish
+                  npm publish package.tgz --provenance
 
                   echo "npm: \`+ brocli@$version\`" >> $GITHUB_STEP_SUMMARY
