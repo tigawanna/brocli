@@ -96,22 +96,35 @@ jobs:
             - name: Skip publish to NPM
               if: steps.npm_check.outputs.exists == 'true'
               run: echo "npm version already exists, skipping"
+              
+            - name: Setup GitHub credentials
+              env:
+                NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              run:
+                echo "@${{ github.repository_owner }}:registry=https://npm.pkg.github.com" > ~/.npmrc
+                echo "//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}" >> ~/.npmrc
 
             - name: Check for GitHub version existence
               id: gpr_check
               env:
                 NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               run: |
-                echo "@${{ github.repository_owner }}:registry=https://npm.pkg.github.com" > ~/.npmrc
-                echo "//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}" >> ~/.npmrc
+                NAME="${{ steps.pkg.outputs.name }}"
+                VERSION="${{ steps.pkg.outputs.version }}"
+                OWNER="${{ github.repository_owner }}"
+                # extract package name without scope
+                PKG_NAME=$(echo "$NAME" | cut -d/ -f2)
 
-                if npm view "${{ steps.pkg.outputs.name }}@${{ steps.pkg.outputs.version }}" \
-                  --registry=https://npm.pkg.github.com > /dev/null 2>&1; then
+                STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+                  -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+                  https://npm.pkg.github.com/@$OWNER/$PKG_NAME/$VERSION)
+
+                if [ "$STATUS" = "200" ]; then
                   echo "exists=true" >> $GITHUB_OUTPUT
                 else
                   echo "exists=false" >> $GITHUB_OUTPUT
                 fi
-                
+
             - name: Publish to GitHub Packages
               if: steps.gpr_check.outputs.exists == 'false'
               run: npm publish package.tgz --access public
