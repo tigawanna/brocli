@@ -1,4 +1,3 @@
-import clone from 'clone';
 import { BroCliError } from './brocli-error';
 import { defaultEventHandler, type EventHandler, eventHandlerWrapper } from './event-handler';
 import {
@@ -10,7 +9,7 @@ import {
 	type ProcessedOptions,
 	type TypeOf,
 } from './option-builder';
-import { executeOrLog, isInt, shellArgs } from './util';
+import { clone, executeOrLog, isInt, shellArgs } from './util';
 
 // Type area
 export type CommandHandler<
